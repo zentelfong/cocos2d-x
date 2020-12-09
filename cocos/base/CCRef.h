@@ -59,6 +59,45 @@ public:
     virtual ~Clonable() {};
 };
 
+
+class CC_DLL RefCount
+{
+public:
+	RefCount()
+		:_strongRefCount(1),_weakRefCount(0)
+	{
+	}
+	
+	int incRef();
+	int incWeakRef();
+	int decRef();
+	int decWeakRef();
+	
+	inline int getRefCount() const
+    {
+        return _strongRefCount;
+    }
+
+    // return true if _Uses == 0
+	inline bool expired() const
+    {
+        return _strongRefCount == 0;
+    }
+
+	inline bool valied() const {
+		return _strongRefCount > 0;
+	}
+
+	inline int getWeakRefCount() const
+    {
+        return _weakRefCount;
+    }
+protected:
+	unsigned int _strongRefCount;
+	unsigned int _weakRefCount;	
+};
+
+
 /**
  * Ref is used for reference count management. If a class inherits from Ref,
  * then it is easy to be shared in different places.
@@ -115,6 +154,8 @@ public:
      */
     unsigned int getReferenceCount() const;
 
+	RefCount* refCount() const { return _refCount; }
+
 protected:
     /**
      * Constructor
@@ -135,7 +176,7 @@ public:
 
 protected:
     /// count of references
-    unsigned int _referenceCount;
+	RefCount* _refCount;
 
     friend class AutoreleasePool;
 

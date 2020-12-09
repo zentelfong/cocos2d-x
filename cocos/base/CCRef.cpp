@@ -43,8 +43,45 @@ static void trackRef(Ref* ref);
 static void untrackRef(Ref* ref);
 #endif
 
+int RefCount::incRef()
+{
+	CCASSERT(_strongRefCount > 0, "reference count should be greater than 0");
+	return ++_strongRefCount;
+}
+
+int RefCount::incWeakRef()
+{
+	return ++_weakRefCount;
+}
+
+
+int RefCount::decRef()
+{
+	CCASSERT(_strongRefCount > 0, "reference count should be greater than 0");
+	int nRs = 0;
+	if (_strongRefCount > 0) {
+		nRs = --_strongRefCount;
+	}
+	return nRs;
+}
+
+
+int RefCount::decWeakRef()
+{
+	CCASSERT(_weakRefCount > 0, "weak count should be greater than 0");
+	int nRs = 0;
+	if (_weakRefCount > 0) {
+		nRs = --_weakRefCount;
+	}
+	return nRs;
+}
+
+
+
+
+
 Ref::Ref()
-: _referenceCount(1) // when the Ref is created, the reference count of it is 1
+: _refCount(new RefCount()) // when the Ref is created, the reference count of it is 1
 #if CC_ENABLE_SCRIPT_BINDING
 , _luaID (0)
 , _scriptObject(nullptr)
@@ -73,6 +110,7 @@ Ref::~Ref()
 #if !CC_ENABLE_GC_FOR_NATIVE_OBJECTS
     else
     {
+        ScriptEngineProtocol* pEngine = ScriptEngineManager::getInstance()->getScriptEngine();
         if (pEngine != nullptr && pEngine->getScriptType() == kScriptTypeJavascript)
         {
             pEngine->removeScriptObjectByObject(this);
@@ -83,23 +121,23 @@ Ref::~Ref()
 
 
 #if CC_REF_LEAK_DETECTION
-    if (_referenceCount != 0)
+    if (!_refCount->expired())
         untrackRef(this);
 #endif
+
+	if (_refCount->getWeakRefCount() == 0) {
+		delete _refCount;
+	}
 }
 
 void Ref::retain()
 {
-    CCASSERT(_referenceCount > 0, "reference count should be greater than 0");
-    ++_referenceCount;
+	_refCount->incRef();
 }
 
 void Ref::release()
 {
-    CCASSERT(_referenceCount > 0, "reference count should be greater than 0");
-    --_referenceCount;
-
-    if (_referenceCount == 0)
+    if (_refCount->decRef() == 0)
     {
 #if defined(COCOS2D_DEBUG) && (COCOS2D_DEBUG > 0)
         auto poolManager = PoolManager::getInstance();
@@ -159,7 +197,7 @@ Ref* Ref::autorelease()
 
 unsigned int Ref::getReferenceCount() const
 {
-    return _referenceCount;
+    return _refCount->getRefCount();
 }
 
 #if CC_REF_LEAK_DETECTION
