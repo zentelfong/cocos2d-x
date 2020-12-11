@@ -59,7 +59,10 @@ public:
     virtual ~Clonable() {};
 };
 
-
+/**
+* RefCount is used for implement weak ptr.
+* @js NA
+*/
 class CC_DLL RefCount
 {
 public:
@@ -68,12 +71,12 @@ public:
 	{
 	}
 	
-	int incRef();
-	int incWeakRef();
-	int decRef();
-	int decWeakRef();
+	unsigned int incRef();
+	unsigned int incWeakRef();
+	unsigned int decRef();
+	unsigned int decWeakRef();
 	
-	inline int getRefCount() const
+	inline unsigned int getRefCount() const
     {
         return _strongRefCount;
     }
@@ -88,7 +91,7 @@ public:
 		return _strongRefCount > 0;
 	}
 
-	inline int getWeakRefCount() const
+	inline unsigned int getWeakRefCount() const
     {
         return _weakRefCount;
     }
@@ -217,6 +220,16 @@ typedef void (Ref::*SEL_SCHEDULE)(float);
 #define CC_CALLFUNCO_SELECTOR(_SELECTOR) static_cast<cocos2d::SEL_CallFuncO>(&_SELECTOR)
 #define CC_MENU_SELECTOR(_SELECTOR) static_cast<cocos2d::SEL_MenuHandler>(&_SELECTOR)
 #define CC_SCHEDULE_SELECTOR(_SELECTOR) static_cast<cocos2d::SEL_SCHEDULE>(&_SELECTOR)
+
+// Deprecated
+#define callfunc_selector(_SELECTOR) CC_CALLFUNC_SELECTOR(_SELECTOR)
+#define callfuncN_selector(_SELECTOR) CC_CALLFUNCN_SELECTOR(_SELECTOR)
+#define callfuncND_selector(_SELECTOR) CC_CALLFUNCND_SELECTOR(_SELECTOR)
+#define callfuncO_selector(_SELECTOR) CC_CALLFUNCO_SELECTOR(_SELECTOR)
+#define menu_selector(_SELECTOR) CC_MENU_SELECTOR(_SELECTOR)
+#define schedule_selector(_SELECTOR) CC_SCHEDULE_SELECTOR(_SELECTOR)
+
+
 
 NS_CC_END
 // end of base group

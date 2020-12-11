@@ -43,22 +43,22 @@ static void trackRef(Ref* ref);
 static void untrackRef(Ref* ref);
 #endif
 
-int RefCount::incRef()
+unsigned int RefCount::incRef()
 {
 	CCASSERT(_strongRefCount > 0, "reference count should be greater than 0");
 	return ++_strongRefCount;
 }
 
-int RefCount::incWeakRef()
+unsigned int RefCount::incWeakRef()
 {
 	return ++_weakRefCount;
 }
 
 
-int RefCount::decRef()
+unsigned int RefCount::decRef()
 {
 	CCASSERT(_strongRefCount > 0, "reference count should be greater than 0");
-	int nRs = 0;
+	unsigned int nRs = 0;
 	if (_strongRefCount > 0) {
 		nRs = --_strongRefCount;
 	}
@@ -66,10 +66,10 @@ int RefCount::decRef()
 }
 
 
-int RefCount::decWeakRef()
+unsigned int RefCount::decWeakRef()
 {
 	CCASSERT(_weakRefCount > 0, "weak count should be greater than 0");
-	int nRs = 0;
+	unsigned int nRs = 0;
 	if (_weakRefCount > 0) {
 		nRs = --_weakRefCount;
 	}
@@ -81,7 +81,7 @@ int RefCount::decWeakRef()
 
 
 Ref::Ref()
-: _refCount(new RefCount()) // when the Ref is created, the reference count of it is 1
+: _refCount(new (std::nothrow) RefCount()) // when the Ref is created, the reference count of it is 1
 #if CC_ENABLE_SCRIPT_BINDING
 , _luaID (0)
 , _scriptObject(nullptr)

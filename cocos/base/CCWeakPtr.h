@@ -22,10 +22,10 @@ NS_CC_BEGIN
 #define CC_WEAK_PTR_SAFE_RELEASE(ref)\
     do\
     {\
-		if (ref && ref->decWeakRef() == 0) { \
+		if (ref && ref->decWeakRef() == 0 && ref->expired()) { \
 			delete ref; \
-			ref = nullptr; \
 		}\
+		ref = nullptr; \
     \
     }   while (0);
 
